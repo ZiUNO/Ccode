@@ -23,9 +23,12 @@ for i in range(size):
     ffset.inputGrammar(e, expression)
     if i == 0:
         ffset.setFirstNontermi(e)
+    elif i == size - 1:
+        ffset.setLastNontermi(e)
 f.close()
 print("终结符：", ffset.getTermi())
 print("文法:", ffset.getGrammar())
 print("First集:", ffset.getFirst())
 print("Follow集:", ffset.getFollow())
 grammarAnalysis = LL1(ffset)
+print(grammarAnalysis.getChart())

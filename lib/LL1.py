@@ -22,20 +22,29 @@ class LL1:
         self.__termi.append('$')
         self.__chart = dict()
         self.__wrongMessage = []
+        self.__message = ''
+        mat = ''
         for e in ffset.getGrammar():
             self.__chart[e] = dict()
             for termi in ffset.getTermi():
-                self.__chart[e][termi] = ''
+                mat += '{:^10}\t'
+                if e == ffset.getLastNontermi():
+                    self.__chart[e][termi] = 'SYNCH'
+                else:
+                    self.__chart[e][termi] = 'ERROR'
             self.__makeRowOf(e)
         del self.__grammar
         del self.__firstSet
         del self.__followSet
         del self.__termi
         for i in self.__chart:
-            print(i, end=" | ")
+            self.__message += i + '|'
             for j in self.__chart[i]:
-                print(j, ":", self.__chart[i][j], end=",\t\t")
-            print()
+                self.__message += "%s:%-10s" % (j, self.__chart[i][j])
+            self.__message += '\n'
+
+    def getChart(self):
+        return self.__message
 
     def __makeRowOf(self, e):
         grammar = self.__grammar[e]
@@ -52,5 +61,4 @@ class LL1:
                     self.__chart[e][tmpTermi] = expression
                 elif tmpTermi in self.__followSet[e]:
                     self.__chart[e][tmpTermi] = "SYNCH"
-
         return

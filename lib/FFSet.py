@@ -22,7 +22,8 @@ class FFSet:
         self.__haveMadeFollow = False
         self.__record = dict()
         self.__hasSetTermi = False
-        self.__hasSetFirstNontermi = False
+        self.__firstNontermi = None
+        self.__lastNontermi = None
 
     def __canInput(self):
         if self.__size == 0 or not self.__hasSetTermi:
@@ -93,9 +94,21 @@ class FFSet:
         return self.__followSet
 
     def setFirstNontermi(self, e):
-        if not self.__hasSetFirstNontermi:
+        if self.__firstNontermi is None:
             self.__followSet[e].append('$')
-            self.__hasSetFirstNontermi = True
+            self.__firstNontermi = e
+        else:
+            exit(1)
+
+    def getFirstNontermi(self):
+        return self.__firstNontermi
+
+    def getLastNontermi(self):
+        return self.__lastNontermi
+
+    def setLastNontermi(self, e):
+        if self.__lastNontermi is None:
+            self.__lastNontermi = e
         else:
             exit(1)
 
