@@ -23,7 +23,7 @@ class LL1:
         self.__termi.append('$')
         self.__chart = dict()
         self.__wrongMessage = []
-        self.__message = ''
+        self.__message = []
         mat = ''
         for e in ffset.getGrammar():
             self.__chart[e] = dict()
@@ -39,13 +39,14 @@ class LL1:
         del self.__followSet
         del self.__termi
         for i in self.__chart:
-            self.__message += i + '|'
+            tmpMessage = i + '|'
             for j in self.__chart[i]:
-                self.__message += "%s:%-10s" % (j, self.__chart[i][j])
-            self.__message += '\n'
+                tmpMessage += "%s:%-10s" % (j, self.__chart[i][j])
+            self.__message.append(tmpMessage)
 
     def getChart(self):
-        return self.__message
+        separator = '\n'
+        return separator.join(self.__message)
 
     def __makeRowOf(self, e):
         grammar = self.__grammar[e]
@@ -84,12 +85,18 @@ class LL1:
                 tmpToCheck = toCheck.pop()
                 columnCount += 1
                 continue
+            if tmpSymbol in self.__ffs.getTermi():
+                count += 1
+                message.append('[ERROR(No.%d)]missing %s at %d column' % (count, tmpSymbol, columnCount))
+                tmpSymbol = stack.pop()
+                columnCount += 1
+                continue
             expression = self.__chart[tmpSymbol][tmpToCheck]
             if expression == "SYNCH" or expression == "ε":
                 tmpSymbol = stack.pop()
                 if expression == "SYNCH":
                     count += 1
-                    message.append('[ERROR(No.%d)]missing %s at %d column' % (count, tmpToCheck, columnCount))
+                    message.append('[ERROR(No.%d)]unexpected %s at %d column' % (count, tmpToCheck, columnCount))
             elif expression == "ERROR":
                 count += 1
                 columnCount += 1

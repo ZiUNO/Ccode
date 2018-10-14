@@ -31,9 +31,9 @@ print("文法:", ffset.getGrammar())
 print("First集:", ffset.getFirst())
 print("Follow集:", ffset.getFollow())
 grammarAnalysis = LL1(ffset)
-# print(grammarAnalysis.getChart())
+print(grammarAnalysis.getChart())
 # toCheck = input("输入语句（以$结尾）：")
-toCheck = 'd+dd*()d$'
+toCheck = '+d*+d$'
 process, message = grammarAnalysis.check(toCheck)
 print(process)
 print(message)
