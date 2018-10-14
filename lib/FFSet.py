@@ -12,9 +12,9 @@ class FFSet:
         self.__termi = []
         self.__grammar = dict()
         self.__isChecked = dict()
-        self.__firstAgg = dict()
+        self.__firstSet = dict()
         self.__firstChild = dict()
-        self.__followAgg = dict()
+        self.__followSet = dict()
         self.__followChild = dict()
         self.__size = size
         self.__hasNULL = []
@@ -44,8 +44,8 @@ class FFSet:
             pass
         self.__grammar[e] = expressions.split("|")
         self.__isChecked[e] = False
-        self.__firstAgg[e] = []
-        self.__followAgg[e] = []
+        self.__firstSet[e] = []
+        self.__followSet[e] = []
         self.__firstChild[e] = []
         self.__followChild[e] = []
         self.__record[e] = []
@@ -54,7 +54,7 @@ class FFSet:
                 if 'ε' == expression:
                     self.__hasNULL.append(e)
                     return
-                self.__firstAgg[e].append(expression[0])
+                self.__firstSet[e].append(expression[0])
             else:
                 self.__firstChild[e].append(expression)
         return
@@ -79,22 +79,22 @@ class FFSet:
                         else:
                             for hasNULLIndex in range(tmpSymbolIndex + 1, len(expression)):
                                 if expression[hasNULLIndex] in self.__termi:
-                                    self.__followAgg[expression[tmpSymbolIndex]].append(expression[hasNULLIndex])
+                                    self.__followSet[expression[tmpSymbolIndex]].append(expression[hasNULLIndex])
                                     break
-                                for toAppend in self.__firstAgg[expression[hasNULLIndex]]:
+                                for toAppend in self.__firstSet[expression[hasNULLIndex]]:
                                     if toAppend != 'ε':
-                                        self.__followAgg[expression[tmpSymbolIndex]].append(toAppend)
+                                        self.__followSet[expression[tmpSymbolIndex]].append(toAppend)
                                 if expression[hasNULLIndex] not in self.__hasNULL:
                                     break
                                 elif hasNULLIndex == len(expression) - 1:
                                     self.__record[e].append(expression[tmpSymbolIndex])
-                        self.__updateFollowAgg()
+                        self.__updateFollowSet()
             self.__haveMadeFollow = True
-        return self.__followAgg
+        return self.__followSet
 
     def setFirstNontermi(self, e):
         if not self.__hasSetFirstNontermi:
-            self.__followAgg[e].append('$')
+            self.__followSet[e].append('$')
             self.__hasSetFirstNontermi = True
         else:
             exit(1)
@@ -111,28 +111,28 @@ class FFSet:
         if not self.__haveMadeFirst:
             for e in self.__firstChild:
                 self.__calculate(e)
-            self.__updateFirstAgg()
+            self.__updateFirstSet()
             for e in self.__hasNULL:
-                self.__firstAgg[e].append('ε')
+                self.__firstSet[e].append('ε')
             self.__haveMadeFirst = True
             self.__clearRecord()
-        return self.__firstAgg
+        return self.__firstSet
 
-    def __updateFirstAgg(self):
+    def __updateFirstSet(self):
         for father in self.__record:
             for child in self.__record[father]:
-                self.__firstAgg[child] += self.__firstAgg[father]
-                self.__firstAgg[child] = list(set(self.__firstAgg[child]))
-                self.__firstAgg[father] = list(set(self.__firstAgg[father]))
+                self.__firstSet[child] += self.__firstSet[father]
+                self.__firstSet[child] = list(set(self.__firstSet[child]))
+                self.__firstSet[father] = list(set(self.__firstSet[father]))
         return
 
-    def __updateFollowAgg(self):
+    def __updateFollowSet(self):
         for father in self.__record:
             for child in self.__record[father]:
-                self.__followAgg[child] += self.__followAgg[father]
-                self.__followAgg[child] = list(set(self.__followAgg[child]))
-        for e in self.__followAgg:
-            self.__followAgg[e] = list(set(self.__followAgg[e]))
+                self.__followSet[child] += self.__followSet[father]
+                self.__followSet[child] = list(set(self.__followSet[child]))
+        for e in self.__followSet:
+            self.__followSet[e] = list(set(self.__followSet[e]))
         return
 
     def __calculate(self, e):
@@ -146,12 +146,12 @@ class FFSet:
         for expression in self.__firstChild[e]:
             for tmpSymbolIndex in range(len(expression)):
                 if expression[tmpSymbolIndex] in self.__termi:
-                    self.__firstAgg[e].append(expression[tmpSymbolIndex])
+                    self.__firstSet[e].append(expression[tmpSymbolIndex])
                     self.__isChecked[e] = True
-                    self.__updateFirstAgg()
+                    self.__updateFirstSet()
                     return False
                 self.__record[expression[tmpSymbolIndex]].append(e)
-                self.__updateFirstAgg()
+                self.__updateFirstSet()
                 if self.__calculate(expression[tmpSymbolIndex]):
                     if tmpSymbolIndex == len(expression) - 1:
                         self.__hasNULL.append(e)

@@ -6,9 +6,12 @@
 * @Time: 2018/10/14 14:30
 """
 
-from FFSet.FFSet import FFSet
+from lib.FFSet import FFSet
+from lib.LL1 import LL1
 
-f = open("../src/" + input("Grammar file name:"))
+# fileName = input("Grammar file name:")
+fileName = 'test.txt'
+f = open("../src/" + fileName)
 size = int(f.readline())  # 非终结符个数
 ffset = FFSet(size)
 terminator = f.readline().strip().split(" ")  # 所有的终结符
@@ -25,3 +28,4 @@ print("终结符：", ffset.getTermi())
 print("文法:", ffset.getGrammar())
 print("First集:", ffset.getFirst())
 print("Follow集:", ffset.getFollow())
+grammarAnalysis = LL1(ffset)
