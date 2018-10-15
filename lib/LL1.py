@@ -15,96 +15,95 @@ class LL1:
 
     def __init__(self, ffset):
         self.__ffs = ffset
-        self.__grammar = self.__ffs.getGrammar()
-        self.__firstSet = self.__ffs.getFirst()
-        self.__followSet = self.__ffs.getFollow()
-        self.__termi = self.__ffs.getTermi()
-        self.__termi.remove('ε')
-        self.__termi.append('$')
+        self.__grammar = self.__ffs.get_grammar()
+        self.__first_set = self.__ffs.get_first()
+        self.__followSet = self.__ffs.get_follow()
+        self.__terminator = self.__ffs.get_terminator()
+        self.__terminator.remove('ε')
+        self.__terminator.append('$')
         self.__chart = dict()
         self.__wrongMessage = []
         self.__message = []
         mat = ''
-        for e in ffset.getGrammar():
+        for e in ffset.get_grammar():
             self.__chart[e] = dict()
-            for termi in ffset.getTermi():
+            for termi in ffset.get_terminator():
                 mat += '{:^10}\t'
-                if e == ffset.getLastNontermi():
+                if e == ffset.get_last_non_terminator():
                     self.__chart[e][termi] = 'SYNCH'
                 else:
                     self.__chart[e][termi] = 'ERROR'
-            self.__makeRowOf(e)
+            self.__make_row_of(e)
         del self.__grammar
-        del self.__firstSet
+        del self.__first_set
         del self.__followSet
-        del self.__termi
+        del self.__terminator
         for i in self.__chart:
-            tmpMessage = i + '|'
+            tmp_message = i + '|'
             for j in self.__chart[i]:
-                tmpMessage += "%s:%-10s" % (j, self.__chart[i][j])
-            self.__message.append(tmpMessage)
+                tmp_message += "%s:%-10s" % (j, self.__chart[i][j])
+            self.__message.append(tmp_message)
 
-    def getChart(self):
+    def get_chart(self):
         separator = '\n'
         return separator.join(self.__message)
 
-    def __makeRowOf(self, e):
+    def __make_row_of(self, e):
         grammar = self.__grammar[e]
         for expression in grammar:
-            for tmpTermi in self.__termi:
+            for tmpTermi in self.__terminator:
                 if tmpTermi == expression[0]:
                     self.__chart[e][tmpTermi] = expression
-                elif expression[0] in self.__termi:
+                elif expression[0] in self.__terminator:
                     pass
                 elif expression == 'ε':
                     for follow in self.__followSet[e]:
                         self.__chart[e][follow] = 'ε'
-                elif tmpTermi in self.__firstSet[e]:
+                elif tmpTermi in self.__first_set[e]:
                     self.__chart[e][tmpTermi] = expression
                 elif tmpTermi in self.__followSet[e]:
                     self.__chart[e][tmpTermi] = "SYNCH"
         return
 
-    def check(self, toCheck):
+    def check(self, to_check):
         process = []
         message = []
         count = 0
-        position = None
-        toCheck = list(reversed(toCheck))
-        if toCheck[0] != '$':
-            toCheck.insert(0, '$')
-        stack = ['$', self.__ffs.getFirstNontermi()]
-        tmpSymbol = stack.pop()
-        tmpToCheck = toCheck.pop()
-        columnCount = 0
+        to_check = list(reversed(to_check))
+        if to_check[0] != '$':
+            to_check.insert(0, '$')
+        stack = ['$', self.__ffs.get_first_non_terminator()]
+        tmp_symbol = stack.pop()
+        tmp_to_check = to_check.pop()
+        column_count = 0
         separator = '\n'
         while len(stack) != 0:
             # 匹配成功
-            if tmpToCheck == tmpSymbol:
-                tmpSymbol = stack.pop()
-                tmpToCheck = toCheck.pop()
-                columnCount += 1
+            if tmp_to_check == tmp_symbol:
+                tmp_symbol = stack.pop()
+                tmp_to_check = to_check.pop()
+                column_count += 1
                 continue
-            if tmpSymbol in self.__ffs.getTermi():
+            if tmp_symbol in self.__ffs.get_terminator():
                 count += 1
-                message.append('[ERROR(No.%d)]missing %s at %d column' % (count, tmpSymbol, columnCount))
-                tmpSymbol = stack.pop()
-                columnCount += 1
+                message.append('[ERROR(No.%d)]missing %s at %d column' % (count, tmp_symbol, column_count))
+                tmp_symbol = stack.pop()
+                column_count += 1
                 continue
-            expression = self.__chart[tmpSymbol][tmpToCheck]
+            expression = self.__chart[tmp_symbol][tmp_to_check]
             if expression == "SYNCH" or expression == "ε":
-                tmpSymbol = stack.pop()
+                tmp_symbol = stack.pop()
                 if expression == "SYNCH":
                     count += 1
-                    message.append('[ERROR(No.%d)]unexpected %s at %d column' % (count, tmpToCheck, columnCount))
+                    message.append('[ERROR(No.%d)]unexpected %s at %d column' % (count, tmp_to_check, column_count))
             elif expression == "ERROR":
                 count += 1
-                columnCount += 1
-                message.append('[ERROR(No.%d)]unexpected %s at %d column' % (count, tmpToCheck, columnCount))
-                tmpToCheck = toCheck.pop()
+                column_count += 1
+                message.append('[ERROR(No.%d)]unexpected %s at %d column' % (count, tmp_to_check, column_count))
+                tmp_to_check = to_check.pop()
             else:
-                process.append('%s->%s' % (tmpSymbol, expression))
+                process.append('%s->%s' % (tmp_symbol, expression))
                 stack += list(reversed(expression))
-                tmpSymbol = stack.pop()
+                tmp_symbol = stack.pop()
         message.append('total %d error(s)' % count)
         return separator.join(process), separator.join(message)

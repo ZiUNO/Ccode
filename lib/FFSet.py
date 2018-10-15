@@ -9,7 +9,7 @@
 
 class FFSet:
     def __init__(self, size):
-        self.__termi = []
+        self.__terminator = []
         self.__grammar = dict()
         self.__isChecked = dict()
         self.__firstSet = dict()
@@ -21,27 +21,27 @@ class FFSet:
         self.__haveMadeFirst = False
         self.__haveMadeFollow = False
         self.__record = dict()
-        self.__hasSetTermi = False
-        self.__firstNontermi = None
-        self.__lastNontermi = None
+        self.__has_set_terminator = False
+        self.__first_non_terminator = None
+        self.__last_non_terminator = None
 
-    def __canInput(self):
-        if self.__size == 0 or not self.__hasSetTermi:
+    def __can_input(self):
+        if self.__size == 0 or not self.__has_set_terminator:
             exit(1)
         self.__size -= 1
         return True
 
-    def __isPrepared(self):
-        if self.__size == 0 or not self.__hasSetTermi:
+    def __is_prepared(self):
+        if self.__size == 0 or not self.__has_set_terminator:
             return True
         return False
 
-    def __clearRecord(self):
+    def __clear_record(self):
         for e in self.__record:
             self.__record[e] = []
 
-    def inputGrammar(self, e, expressions):
-        if self.__canInput():
+    def input_grammar(self, e, expressions):
+        if self.__can_input():
             pass
         self.__grammar[e] = expressions.split("|")
         self.__isChecked[e] = False
@@ -51,7 +51,7 @@ class FFSet:
         self.__followChild[e] = []
         self.__record[e] = []
         for expression in self.__grammar[e]:
-            if expression[0] in self.__termi:
+            if expression[0] in self.__terminator:
                 if 'ε' == expression:
                     self.__hasNULL.append(e)
                     return
@@ -60,18 +60,18 @@ class FFSet:
                 self.__firstChild[e].append(expression)
         return
 
-    def getGrammar(self):
+    def get_grammar(self):
         return self.__grammar
 
-    def getFollow(self):
+    def get_follow(self):
         if not self.__haveMadeFollow:
             if not self.__haveMadeFirst:
-                self.getFirst()
+                self.get_first()
                 self.__haveMadeFirst = True
         for e in self.__grammar:
             for expression in self.__grammar[e]:
                 for tmpSymbolIndex in range(len(expression)):
-                    if expression[tmpSymbolIndex] not in self.__termi:
+                    if expression[tmpSymbolIndex] not in self.__terminator:
                         if tmpSymbolIndex == len(expression) - 1:
                             if expression[tmpSymbolIndex] == e:
                                 continue
@@ -79,7 +79,7 @@ class FFSet:
                             self.__record[e].append(expression[tmpSymbolIndex])
                         else:
                             for hasNULLIndex in range(tmpSymbolIndex + 1, len(expression)):
-                                if expression[hasNULLIndex] in self.__termi:
+                                if expression[hasNULLIndex] in self.__terminator:
                                     self.__followSet[expression[tmpSymbolIndex]].append(expression[hasNULLIndex])
                                     break
                                 for toAppend in self.__firstSet[expression[hasNULLIndex]]:
@@ -89,49 +89,49 @@ class FFSet:
                                     break
                                 elif hasNULLIndex == len(expression) - 1:
                                     self.__record[e].append(expression[tmpSymbolIndex])
-                        self.__updateFollowSet()
+                        self.__update_follow_set()
             self.__haveMadeFollow = True
         return self.__followSet
 
-    def setFirstNontermi(self, e):
-        if self.__firstNontermi is None:
+    def set_first_non_terminator(self, e):
+        if self.__first_non_terminator is None:
             self.__followSet[e].append('$')
-            self.__firstNontermi = e
+            self.__first_non_terminator = e
         else:
             exit(1)
 
-    def getFirstNontermi(self):
-        return self.__firstNontermi
+    def get_first_non_terminator(self):
+        return self.__first_non_terminator
 
-    def getLastNontermi(self):
-        return self.__lastNontermi
+    def get_last_non_terminator(self):
+        return self.__last_non_terminator
 
-    def setLastNontermi(self, e):
-        if self.__lastNontermi is None:
-            self.__lastNontermi = e
+    def set_last_non_terminator(self, e):
+        if self.__last_non_terminator is None:
+            self.__last_non_terminator = e
         else:
             exit(1)
 
-    def getTermi(self):
-        return self.__termi
+    def get_terminator(self):
+        return self.__terminator
 
-    def setTermi(self, termi):
-        self.__hasSetTermi = True
-        self.__termi = termi.copy()
+    def set_terminator(self, termi):
+        self.__has_set_terminator = True
+        self.__terminator = termi.copy()
         return
 
-    def getFirst(self):
+    def get_first(self):
         if not self.__haveMadeFirst:
             for e in self.__firstChild:
                 self.__calculate(e)
-            self.__updateFirstSet()
+            self.__update_first_set()
             for e in self.__hasNULL:
                 self.__firstSet[e].append('ε')
             self.__haveMadeFirst = True
-            self.__clearRecord()
+            self.__clear_record()
         return self.__firstSet
 
-    def __updateFirstSet(self):
+    def __update_first_set(self):
         for father in self.__record:
             for child in self.__record[father]:
                 self.__firstSet[child] += self.__firstSet[father]
@@ -139,7 +139,7 @@ class FFSet:
                 self.__firstSet[father] = list(set(self.__firstSet[father]))
         return
 
-    def __updateFollowSet(self):
+    def __update_follow_set(self):
         for father in self.__record:
             for child in self.__record[father]:
                 self.__followSet[child] += self.__followSet[father]
@@ -149,22 +149,22 @@ class FFSet:
         return
 
     def __calculate(self, e):
-        isContainsNULL = False
+        is_contains_null = False
         if e in self.__hasNULL:
-            isContainsNULL = True
+            is_contains_null = True
         if len(self.__firstChild[e]) == 0:
             self.__isChecked[e] = True
         if self.__isChecked[e]:
-            return isContainsNULL
+            return is_contains_null
         for expression in self.__firstChild[e]:
             for tmpSymbolIndex in range(len(expression)):
-                if expression[tmpSymbolIndex] in self.__termi:
+                if expression[tmpSymbolIndex] in self.__terminator:
                     self.__firstSet[e].append(expression[tmpSymbolIndex])
                     self.__isChecked[e] = True
-                    self.__updateFirstSet()
+                    self.__update_first_set()
                     return False
                 self.__record[expression[tmpSymbolIndex]].append(e)
-                self.__updateFirstSet()
+                self.__update_first_set()
                 if self.__calculate(expression[tmpSymbolIndex]):
                     if tmpSymbolIndex == len(expression) - 1:
                         self.__hasNULL.append(e)
