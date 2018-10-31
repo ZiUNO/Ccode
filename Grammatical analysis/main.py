@@ -10,6 +10,8 @@ from lib.FFSet import FFSet
 from lib.LL1 import LL1
 
 # fileName = input("Grammar file name:")
+from lib.LR1 import LR1
+
 fileName = 'test.txt'
 f = open("../src/" + fileName)
 size = int(f.readline())  # 非终结符个数
@@ -26,14 +28,22 @@ for i in range(size):
     elif i == size - 1:
         ff_set.set_last_non_terminator(e)
 f.close()
-print("终结符：", ff_set.get_terminator())
+print("终结符：", ff_set.get_terminator_of_first())
 print("文法:", ff_set.get_grammar())
 print("First集:", ff_set.get_first())
 print("Follow集:", ff_set.get_follow())
-grammarAnalysis = LL1(ff_set)
-print(grammarAnalysis.get_chart())
-# toCheck = input("输入语句（以$结尾）：")
-toCheck = '+d*+d$'
-process, message = grammarAnalysis.check(toCheck)
-print(process)
-print(message)
+# grammarAnalysis = LL1(ff_set)
+# print(grammarAnalysis.get_chart())
+# # toCheck = input("输入语句（以$结尾）：")
+# toCheck = '(d**d+(dd+*dd*d+dd($'
+# process, message = grammarAnalysis.check(toCheck)
+# print(process)
+# print(message)
+lr1 = LR1(ff_set)
+print('items###################')
+for item_index in range(len(lr1.get_items())):
+    print(item_index, lr1.get_items()[item_index])
+lr_map = lr1.get_lr_map()
+print('lr map ~~~~~~~~~~~~~~~~')
+for row_index in range(len(lr_map)):
+    print(row_index, lr_map[row_index])

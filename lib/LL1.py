@@ -18,7 +18,7 @@ class LL1:
         self.__grammar = self.__ffs.get_grammar()
         self.__first_set = self.__ffs.get_first()
         self.__followSet = self.__ffs.get_follow()
-        self.__terminator = self.__ffs.get_terminator()
+        self.__terminator = self.__ffs.get_terminator_of_first()
         self.__terminator.remove('ε')
         self.__terminator.append('$')
         self.__chart = dict()
@@ -27,7 +27,7 @@ class LL1:
         mat = ''
         for e in ffset.get_grammar():
             self.__chart[e] = dict()
-            for termi in ffset.get_terminator():
+            for termi in ffset.get_terminator_of_first():
                 mat += '{:^10}\t'
                 if e == ffset.get_last_non_terminator():
                     self.__chart[e][termi] = 'SYNCH'
@@ -84,7 +84,7 @@ class LL1:
                 tmp_to_check = to_check.pop()
                 column_count += 1
                 continue
-            if tmp_symbol in self.__ffs.get_terminator():
+            if tmp_symbol in self.__ffs.get_terminator_of_first():
                 count += 1
                 message.append('[ERROR(No.%d)]missing %s at %d column' % (count, tmp_symbol, column_count))
                 tmp_symbol = stack.pop()
