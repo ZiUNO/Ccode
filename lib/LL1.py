@@ -78,7 +78,6 @@ class LL1:
         column_count = 0
         separator = '\n'
         while len(stack) != 0:
-            # 匹配成功
             if tmp_to_check == tmp_symbol:
                 tmp_symbol = stack.pop()
                 tmp_to_check = to_check.pop()

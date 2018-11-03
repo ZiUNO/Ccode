@@ -9,6 +9,12 @@
 class LR1:
     ROOT = '#R'
     ACC = 'ACC'
+    ERROR_UNEXPECTED = 'UE'
+    ERROR_MISSING = 'MI'
+    ACTION = {
+        's': '移进',
+        'r': '归约'
+    }
 
     def __init__(self, ffset):
         self.__ffset = ffset
@@ -20,7 +26,6 @@ class LR1:
         LR1.__get_item_index_of(self.__items, [[LR1.ROOT, '', ffset.get_first_non_terminator(), ['$']]])
         self.__make_items()
         del self.__ffset
-        del self.__terminators
         del self.__grammar
 
     def get_items(self):
@@ -94,12 +99,68 @@ class LR1:
             for terminator in self.__terminators:
                 state = new_item_map[terminator]
                 if state is None:
+                    new_item_map[terminator] = LR1.ERROR_UNEXPECTED
                     continue
                 elif state[0] == 's':
                     item_index = LR1.__get_item_index_of(self.__items, new_items[int(state[1:])])
                     new_item_map[terminator] = 's%d' % item_index
-
             self.__lr_map.append(new_item_map)
+
+    def check(self, to_check):
+        process = []
+        message = []
+        count_error = 0
+        to_check = list(reversed(to_check))
+        if to_check[0] != '$':
+            to_check.insert(0, '$')
+        stack = [0]
+        column_count = 0
+        separator = '\n'
+        while len(to_check) != 0:
+            tmp_to_check = to_check.pop()
+            top = stack[-1]
+            state = self.__lr_map[top][tmp_to_check]
+            column_count += 1
+            if state == LR1.ERROR_UNEXPECTED:
+                process_to_append = 'error'
+                count_error += 1
+                message_to_append = '[ERROR(No.%d)]unexpected %s at %d column' % (
+                    count_error, tmp_to_check, column_count)
+                missing = []
+                for terminator in self.__terminators:
+                    state = self.__lr_map[top][terminator]
+                    if state == LR1.ERROR_UNEXPECTED:
+                        continue
+                    elif state[0] == 's':
+                        missing.append(terminator)
+                if len(missing) == 0:
+                    missing = ''
+                else:
+                    missing = "(maybe missing '%s')" % "'or'".join(missing)
+                message.append(message_to_append + missing)
+            elif state[0] == 's':
+                next_item_index = int(state[1:])
+                stack.append(tmp_to_check)
+                stack.append(next_item_index)
+                process_to_append = LR1.ACTION['s']
+            elif state[0] == 'r':
+                e, production = self.__formula[int(state[1:])]
+                production_len = len(production)
+                for tmp in range(production_len):
+                    stack.pop()
+                    stack.pop()
+                after_r_state = stack[-1]
+                stack.append(e)
+                stack.append(self.__lr_map[after_r_state][e])
+                process_to_append = '按照%s->%s归约' % (e, production)
+                to_check.append(tmp_to_check)
+                column_count -= 1
+            else:
+                process_to_append = '接受'
+            process.append(process_to_append)
+        tail_message = 'total %d error(s)' % len(message)
+        message.append(tail_message)
+        return separator.join(process), separator.join(message)
 
     def __make_closure(self, item):
         for expression in item:
